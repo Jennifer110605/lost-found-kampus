@@ -16,7 +16,7 @@ function isActive(type = null) {
 const initial = computed(() => (user.value?.name ? user.value.name.charAt(0).toUpperCase() : '?'));
 
 const notifications = computed(() => page.props.notifications || []);
-const unreadCount = computed(() => notifications.value.filter(n => !n.has_handover || n.status === 'rejected').length);
+const unreadCount = computed(() => notifications.value.filter(n => n.type === 'comment' || (n.type === 'claim' && (!n.has_handover || n.status === 'rejected'))).length);
 const showNotif = ref(false);
 
 function formatNotifDate(d) {
@@ -25,11 +25,6 @@ function formatNotifDate(d) {
 
 function logout() {
     router.post('/logout');
-}
-
-// Close notif dropdown on outside click
-if (typeof window !== 'undefined') {
-    window.addEventListener('click', () => { showNotif.value = false; });
 }
 
 // Flash message (success / error) dari session Laravel
@@ -93,7 +88,7 @@ const year = new Date().getFullYear();
                         <!-- Notification Bell -->
                         <li v-if="user" class="nav-item position-relative">
                             <button type="button" class="btn btn-light btn-sm position-relative notif-btn"
-                                    @click="showNotif = !showNotif">
+                                    @click.stop="showNotif = !showNotif">
                                 <i class="bi bi-bell-fill"></i>
                                 <span v-if="unreadCount > 0"
                                       class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem">
@@ -101,8 +96,15 @@ const year = new Date().getFullYear();
                                 </span>
                             </button>
 
+                            <!-- Overlay tutup dropdown kalau klik di luar -->
+                            <div v-if="showNotif"
+                                 class="position-fixed"
+                                 style="inset:0;z-index:1049;"
+                                 @click="showNotif = false">
+                            </div>
+
                             <!-- Dropdown Notifikasi -->
-                            <div v-if="showNotif" class="notif-dropdown shadow" @click.stop>
+                            <div v-if="showNotif" class="notif-dropdown shadow" @click.stop style="z-index:1050">
                                 <div class="notif-header">
                                     <span class="fw-bold">Notifikasi</span>
                                     <button type="button" class="btn-close btn-sm" @click="showNotif = false"></button>
@@ -112,28 +114,29 @@ const year = new Date().getFullYear();
                                     <p class="text-muted small mb-0 mt-2">Belum ada notifikasi</p>
                                 </div>
                                 <div v-for="n in notifications" :key="n.id" class="notif-item"
-                                     :class="{ 'notif-unread': !n.has_handover && n.status === 'approved' }">
+                                     :class="{ 'notif-unread': (n.type==='claim' && !n.has_handover && n.status==='approved') || n.type==='comment' }">
                                     <div class="d-flex align-items-start gap-2">
                                         <i class="bi mt-1 flex-shrink-0"
-                                           :class="n.status === 'approved' ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger'"></i>
+                                           :class="{
+                                               'bi-check-circle-fill text-success': n.type==='claim' && n.status==='approved',
+                                               'bi-x-circle-fill text-danger':      n.type==='claim' && n.status==='rejected',
+                                               'bi-chat-left-text-fill text-primary': n.type==='comment'
+                                           }"></i>
                                         <div class="flex-grow-1">
-                                            <p class="mb-0 small fw-semibold">
-                                                {{ n.status === 'approved' ? 'Klaim Disetujui' : 'Klaim Ditolak' }}
-                                            </p>
+                                            <p class="mb-0 small fw-semibold">{{ n.message }}</p>
                                             <p class="mb-0 small text-muted">{{ n.item_name }}</p>
                                             <p v-if="n.admin_note" class="mb-0 small fst-italic text-muted">"{{ n.admin_note }}"</p>
-                                            <p v-if="n.status === 'approved' && !n.has_handover"
+                                            <p v-if="n.type==='claim' && n.status==='approved' && !n.has_handover"
                                                class="mb-1 small text-warning fw-semibold">
                                                 <i class="bi bi-camera me-1"></i>Upload foto serah terima!
                                             </p>
-                                            <Link v-if="n.status === 'approved'"
-                                                  :href="'/items/' + n.item_id"
-                                                  class="btn btn-xs btn-outline-primary btn-sm py-0 px-2"
+                                            <Link :href="'/items/' + n.item_id"
+                                                  class="btn btn-outline-primary btn-sm py-0 px-2 mt-1"
                                                   style="font-size:.72rem"
                                                   @click="showNotif = false">
                                                 Lihat Barang
                                             </Link>
-                                            <p class="mb-0 text-muted" style="font-size:.7rem">{{ formatNotifDate(n.updated_at) }}</p>
+                                            <p class="mb-0 text-muted mt-1" style="font-size:.7rem">{{ formatNotifDate(n.created_at) }}</p>
                                         </div>
                                     </div>
                                 </div>
