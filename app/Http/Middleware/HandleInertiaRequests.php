@@ -24,6 +24,23 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'notifications' => fn () => $request->user()
+                ? \App\Models\ClaimRequest::where('user_id', $request->user()->id)
+                    ->whereIn('status', ['approved', 'rejected'])
+                    ->with('item:id,name,type')
+                    ->latest('updated_at')
+                    ->take(10)
+                    ->get()
+                    ->map(fn ($c) => [
+                        'id'           => $c->id,
+                        'status'       => $c->status,
+                        'item_name'    => $c->item->name ?? 'Barang',
+                        'item_id'      => $c->item_id,
+                        'has_handover' => !empty($c->handover_photo),
+                        'admin_note'   => $c->admin_note,
+                        'updated_at'   => $c->updated_at,
+                    ])
+                : [],
         ]);
     }
 }

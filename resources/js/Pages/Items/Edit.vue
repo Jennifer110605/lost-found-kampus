@@ -129,7 +129,7 @@ function submit() {
                                 </div>
 
                                 <div class="photo-upload-area">
-                                    <input type="file" class="photo-input" accept="image/jpg,image/jpeg,image/png,image/webp" @change="onPhotoChange">
+                                    <input type="file" class="photo-input" accept="image/jpg,image/jpeg,image/png,image/webp" capture="environment" @change="onPhotoChange">
                                     <div v-show="!preview" class="photo-upload-placeholder">
                                         <i class="bi bi-cloud-upload"></i>
                                         <p>{{ item.photo ? 'Ganti foto (opsional)' : 'Upload foto (opsional)' }}</p>

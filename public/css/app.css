@@ -473,3 +473,126 @@ input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display:
 
 /* ── Container ───────────────────────────────────────────────── */
 .container { max-width: 1200px; }
+
+/* ── Notification Bell ──────────────────────────────────────── */
+.notif-btn {
+    width: 36px; height: 36px;
+    border-radius: 50% !important;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border) !important;
+    background: var(--surface) !important;
+    color: var(--text-muted);
+    transition: var(--transition);
+    padding: 0;
+}
+.notif-btn:hover { background: var(--primary-pale) !important; color: var(--primary); border-color: var(--primary) !important; }
+
+.notif-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    z-index: 1050;
+    animation: fadeUp .2s ease;
+    max-height: 420px;
+    overflow-y: auto;
+}
+.notif-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: #fff; z-index: 1;
+}
+.notif-empty { padding: 2rem 1rem; text-align: center; }
+.notif-item {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .2s;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #f8fafc; }
+.notif-unread { background: #f0f9ff; border-left: 3px solid var(--primary); }
+
+/* ── Mobile Responsive ──────────────────────────────────────── */
+@media (max-width: 576px) {
+    /* Navbar */
+    .navbar-brand { font-size: 1.1rem; }
+    .navbar-brand small { font-size: .52rem; padding: 1px 5px; }
+
+    /* Hero */
+    .hero-section { padding: 2.5rem 0 2rem; }
+    .hero-title { font-size: 1.35rem; letter-spacing: -.3px; }
+    .hero-subtitle { font-size: .88rem; line-height: 1.7; }
+
+    /* Stats */
+    .stat-number { font-size: 1.4rem; }
+    .stat-label { font-size: .62rem; }
+
+    /* Search bar */
+    .search-bar-form { padding: 1rem; }
+
+    /* Item cards */
+    .item-card .card-body { padding: .85rem; }
+    .card-type-badge { font-size: .62rem; padding: .2rem .6rem; }
+
+    /* Section title */
+    .section-title { font-size: 1.25rem; }
+
+    /* Detail page */
+    .detail-title { font-size: 1.35rem; }
+    .detail-card .card-body { padding: 1.25rem !important; }
+
+    /* Forms */
+    .form-card .card-header { padding: 1.1rem 1.25rem; }
+    .form-card .card-body { padding: 1.25rem !important; }
+    .type-box { padding: .9rem .5rem; }
+    .type-box i { font-size: 1.5rem; }
+    .type-box strong { font-size: .85rem; }
+    .type-box small { font-size: .68rem; }
+
+    /* Buttons */
+    .btn-lg { font-size: .88rem; padding: .55rem .85rem; }
+    .d-flex.gap-2 .btn-lg { flex: 1; }
+
+    /* Auth */
+    .auth-body { padding: 1.25rem .75rem; }
+    .auth-card .card-body, .auth-card { padding: 1.25rem !important; }
+    .brand-text { font-size: 1.6rem; }
+    .brand-icon { font-size: 2.2rem; }
+
+    /* Admin */
+    .admin-main { padding: 1rem; }
+    .admin-topbar { padding: .75rem 1rem; }
+    .admin-stat-card { padding: 1rem; gap: .85rem; }
+    .stat-num { font-size: 1.4rem; }
+
+    /* Notification dropdown */
+    .notif-dropdown { width: calc(100vw - 2rem); right: -1rem; }
+
+    /* Comments */
+    .detail-comments .card-body { padding: 1rem; }
+
+    /* Tables */
+    .table { font-size: .82rem; }
+}
+
+@media (max-width: 768px) {
+    /* Hero illustration smaller */
+    .hero-illustration { font-size: 7rem; opacity: .35; }
+
+    /* Meta grid stack */
+    .detail-meta .col-sm-6 { margin-bottom: .5rem; }
+
+    /* Pagination smaller */
+    .page-link { padding: .3rem .55rem; font-size: .82rem; }
+
+    /* Admin sidebar full width when open */
+    .admin-sidebar.sidebar-open { width: 240px; }
+
+    /* Claim form */
+    .d-flex.gap-2.flex-wrap .btn { font-size: .85rem; }
+}

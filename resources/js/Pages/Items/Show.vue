@@ -20,12 +20,15 @@ function canDelete(comment) {
 
 
 // WhatsApp link helper
-function waLink(phone) {
+function waLink(phone, itemName) {
     if (!phone) return null;
     let p = phone.replace(/\D/g, '');
     if (p.startsWith('0')) p = '62' + p.slice(1);
     else if (!p.startsWith('62')) p = '62' + p;
-    return 'https://wa.me/' + p;
+    const msg = encodeURIComponent(
+        'Halo, saya dari web Lost & Found FATEK UNSRAT. Saya ingin menghubungi Anda terkait postingan barang "' + (itemName || '') + '". Terima kasih.'
+    );
+    return 'https://wa.me/' + p + '?text=' + msg;
 }
 
 // Claim form
@@ -178,7 +181,7 @@ function deleteItem() {
                                     <span class="meta-label"><i class="bi bi-telephone me-1"></i>Kontak</span>
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="meta-value">{{ item.user?.phone || 'Tidak tersedia' }}</span>
-                                        <a v-if="item.user?.phone" :href="waLink(item.user.phone)" target="_blank" class="btn btn-sm btn-success py-0 px-2">
+                                        <a v-if="item.user?.phone" :href="waLink(item.user.phone, item.name)" target="_blank" class="btn btn-sm btn-success py-0 px-2">
                                             <i class="bi bi-whatsapp me-1"></i>Chat WA
                                         </a>
                                     </div>
@@ -250,7 +253,7 @@ function deleteItem() {
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Foto Bukti <span class="text-muted small">(opsional)</span></label>
-                                        <input type="file" accept="image/*" class="form-control" @change="onClaimPhotoChange">
+                                        <input type="file" accept="image/*" capture="environment" class="form-control" @change="onClaimPhotoChange">
                                         <img v-if="claimPhotoPreview" :src="claimPhotoPreview" class="img-thumbnail mt-2 d-block" style="max-height:140px">
                                     </div>
                                     <button type="submit" class="btn btn-primary" :disabled="claimForm.processing">
