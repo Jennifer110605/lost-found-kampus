@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Item extends Model
 {
@@ -98,10 +99,12 @@ class Item extends Model
     /**
      * Helper: URL foto barang
      */
-    public function getPhotoUrlAttribute(): string
+    public function getPhotoUrlAttribute()
     {
-        return $this->photo
-            ? asset('storage/' . $this->photo)
-            : asset('images/no-photo.png');
+        if (!$this->photo) return null;
+        // Cloudinary URL sudah full URL
+        if (str_starts_with($this->photo, 'http')) return $this->photo;
+        // Local storage
+        return Storage::url($this->photo);
     }
 }

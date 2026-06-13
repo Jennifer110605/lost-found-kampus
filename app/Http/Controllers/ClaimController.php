@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ClaimRequest;
 use App\Models\Item;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ClaimController extends Controller
 {
@@ -21,7 +20,6 @@ class ClaimController extends Controller
             'description.min' => 'Deskripsi bukti minimal 20 karakter.',
         ]);
 
-        // Cek apakah user sudah punya klaim aktif untuk item ini
         $existing = ClaimRequest::where('item_id', $item->id)
             ->where('user_id', auth()->id())
             ->whereIn('status', ['pending', 'approved'])
@@ -31,24 +29,27 @@ class ClaimController extends Controller
             return back()->with('error', 'Kamu sudah memiliki klaim aktif untuk barang ini.');
         }
 
-        $proofPath = null;
+        $proofUrl = null;
         if ($request->hasFile('proof_photo')) {
-            $proofPath = $request->file('proof_photo')->store('claims/proof', 'public');
+            $proofUrl = cloudinary()->upload(
+                $request->file('proof_photo')->getRealPath(),
+                ['folder' => 'lost-found/proofs']
+            )->getSecurePath();
         }
 
         ClaimRequest::create([
             'item_id'     => $item->id,
             'user_id'     => auth()->id(),
             'description' => $request->description,
-            'proof_photo' => $proofPath,
+            'proof_photo' => $proofUrl,
         ]);
 
         return back()->with('success', 'Klaim berhasil diajukan. Tunggu verifikasi dari admin.');
     }
 
     /**
-     * Upload foto dokumentasi serah terima setelah klaim disetujui.
-     * Server menambahkan watermark timestamp otomatis untuk mencegah foto palsu.
+     * Upload foto serah terima dengan watermark timestamp.
+     * Foto diproses dengan GD (watermark), lalu diupload ke Cloudinary.
      */
     public function uploadHandover(Request $request, ClaimRequest $claim)
     {
@@ -63,24 +64,22 @@ class ClaimController extends Controller
         }
 
         $file     = $request->file('handover_photo');
-        $filename = 'handover_' . $claim->id . '_' . time() . '.jpg';
-        $savePath = storage_path('app/public/claims/handover/' . $filename);
+        $tempPath = sys_get_temp_dir() . '/handover_' . uniqid() . '.jpg';
 
-        // Buat direktori jika belum ada
-        if (!file_exists(dirname($savePath))) {
-            mkdir(dirname($savePath), 0755, true);
-        }
+        // Tambahkan watermark, simpan ke temp file
+        $watermarked = $this->addWatermark($file->getRealPath(), $tempPath, $claim);
+        $uploadFrom  = $watermarked ? $tempPath : $file->getRealPath();
 
-        // Tambahkan watermark timestamp (via PHP GD)
-        $watermarked = $this->addWatermark($file->getRealPath(), $savePath, $claim);
+        // Upload ke Cloudinary
+        $result   = cloudinary()->upload($uploadFrom, ['folder' => 'lost-found/handover']);
+        $photoUrl = $result->getSecurePath();
 
-        if (!$watermarked) {
-            // Fallback: simpan tanpa watermark jika GD tidak tersedia
-            $file->storeAs('claims/handover', $filename, 'public');
+        if ($watermarked && file_exists($tempPath)) {
+            unlink($tempPath);
         }
 
         $claim->update([
-            'handover_photo' => 'claims/handover/' . $filename,
+            'handover_photo' => $photoUrl,
             'handover_at'    => now(),
         ]);
 
@@ -89,7 +88,6 @@ class ClaimController extends Controller
 
     /**
      * Tambahkan watermark timestamp ke foto (anti-foto palsu).
-     * Watermark berisi: tanggal-waktu server + ID klaim + nama barang.
      */
     private function addWatermark(string $sourcePath, string $destPath, ClaimRequest $claim): bool
     {
@@ -108,7 +106,6 @@ class ClaimController extends Controller
         $w = imagesx($img);
         $h = imagesy($img);
 
-        // Teks watermark
         $timestamp = now()->format('d/m/Y H:i:s');
         $itemName  = $claim->item->name ?? 'Barang';
         $lines     = [
@@ -119,19 +116,16 @@ class ClaimController extends Controller
             "Lost&Found FATEK UNSRAT",
         ];
 
-        // Background strip hitam semi-transparan di bawah
         $boxH    = count($lines) * 20 + 20;
         $overlay = imagecreatetruecolor($w, $boxH);
         imagefill($overlay, 0, 0, imagecolorallocate($overlay, 0, 0, 0));
         imagecopymerge($img, $overlay, 0, $h - $boxH, 0, 0, $w, $boxH, 70);
         imagedestroy($overlay);
 
-        // Tulis teks
-        $white = imagecolorallocate($img, 255, 255, 255);
+        $white  = imagecolorallocate($img, 255, 255, 255);
         $yellow = imagecolorallocate($img, 255, 220, 50);
         foreach ($lines as $i => $line) {
-            $color = $i === 0 ? $yellow : $white;
-            imagestring($img, 4, 12, $h - $boxH + 10 + ($i * 20), $line, $color);
+            imagestring($img, 4, 12, $h - $boxH + 10 + ($i * 20), $line, $i === 0 ? $yellow : $white);
         }
 
         imagejpeg($img, $destPath, 90);

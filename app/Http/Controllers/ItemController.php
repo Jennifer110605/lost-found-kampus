@@ -6,6 +6,18 @@ use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+
+// Helper: upload file ke Cloudinary, return URL
+if (!function_exists('cloudinaryUpload')) {
+    function cloudinaryUpload($file, string $folder = 'lost-found'): string {
+        return cloudinary()->upload($file->getRealPath(), ['folder' => $folder])->getSecurePath();
+    }
+    function cloudinaryDelete(string $url): void {
+        if (!str_starts_with($url, 'http')) return;
+        preg_match('/\/v\d+\/(.+?)(?:\.[a-z]+)?$/', $url, $m);
+        if (!empty($m[1])) cloudinary()->destroy($m[1]);
+    }
+}
 use Inertia\Inertia;
 
 class ItemController extends Controller
