@@ -109,7 +109,7 @@ function submit() {
                             <div class="mb-4">
                                 <label class="form-label fw-semibold">Foto Barang</label>
                                 <div class="photo-upload-area">
-                                    <input type="file" class="photo-input" accept="image/jpg,image/jpeg,image/png,image/webp" capture="environment" @change="onPhotoChange">
+                                    <input type="file" class="photo-input" accept="image/*" @change="onPhotoChange">
                                     <div v-show="!preview" class="photo-upload-placeholder">
                                         <i class="bi bi-cloud-upload"></i>
                                         <p>Klik atau drag foto ke sini</p>

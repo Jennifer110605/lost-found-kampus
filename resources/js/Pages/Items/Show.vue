@@ -226,7 +226,7 @@ function deleteItem() {
                                     <div v-else>
                                         <p class="small fw-semibold mb-1"><i class="bi bi-camera me-1"></i>Upload foto dokumentasi serah terima:</p>
                                         <p class="small text-muted mb-2">Foto akan diberi <strong>watermark timestamp</strong> oleh server — tidak bisa dipalsukan.</p>
-                                        <input type="file" accept="image/*" capture="environment" class="form-control form-control-sm mb-2" @change="onHandoverChange">
+                                        <input type="file" accept="image/*" class="form-control form-control-sm mb-2" @change="onHandoverChange">
                                         <img v-if="handoverPreview" :src="handoverPreview" class="img-thumbnail mb-2 d-block" style="max-height:140px">
                                         <button type="button" class="btn btn-success btn-sm"
                                                 :disabled="!handoverForm.handover_photo || handoverForm.processing"
@@ -253,7 +253,7 @@ function deleteItem() {
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Foto Bukti <span class="text-muted small">(opsional)</span></label>
-                                        <input type="file" accept="image/*" capture="environment" class="form-control" @change="onClaimPhotoChange">
+                                        <input type="file" accept="image/*" class="form-control" @change="onClaimPhotoChange">
                                         <img v-if="claimPhotoPreview" :src="claimPhotoPreview" class="img-thumbnail mt-2 d-block" style="max-height:140px">
                                     </div>
                                     <button type="submit" class="btn btn-primary" :disabled="claimForm.processing">
