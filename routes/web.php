@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 
 
 use App\Http\Controllers\ClaimController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminController;
 
 // Admin routes
@@ -52,6 +53,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/items/{item}/claim', [ClaimController::class, 'store'])->name('items.claim.store');
     Route::post('/claims/{claim}/handover', [ClaimController::class, 'uploadHandover'])->name('claims.handover');
+    // Notifikasi
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 // Logout

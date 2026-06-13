@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
@@ -16,8 +16,37 @@ function isActive(type = null) {
 const initial = computed(() => (user.value?.name ? user.value.name.charAt(0).toUpperCase() : '?'));
 
 const notifications = computed(() => page.props.notifications || []);
-const unreadCount = computed(() => notifications.value.filter(n => n.type === 'comment' || (n.type === 'claim' && (!n.has_handover || n.status === 'rejected'))).length);
+const unreadCount   = computed(() => page.props.unread_count || 0);
 const showNotif = ref(false);
+let pollInterval = null;
+
+// Mark notif as read
+function markRead(id) {
+    router.post('/notifications/' + id + '/read', {}, { preserveScroll: true, preserveState: false });
+}
+
+// Hapus notif
+function deleteNotif(id) {
+    router.delete('/notifications/' + id, {}, { preserveScroll: true, preserveState: false });
+}
+
+// Buka dropdown → mark all as read
+function openNotif() {
+    showNotif.value = !showNotif.value;
+    if (showNotif.value && unreadCount.value > 0) {
+        router.post('/notifications/read-all', {}, { preserveScroll: true, preserveState: false });
+    }
+}
+
+// Real-time: polling tiap 15 detik
+onMounted(() => {
+    pollInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            router.reload({ only: ['notifications', 'unread_count'] });
+        }
+    }, 15000);
+});
+onUnmounted(() => clearInterval(pollInterval));
 
 function formatNotifDate(d) {
     return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -88,7 +117,7 @@ const year = new Date().getFullYear();
                         <!-- Notification Bell -->
                         <li v-if="user" class="nav-item position-relative">
                             <button type="button" class="btn btn-light btn-sm position-relative notif-btn"
-                                    @click.stop="showNotif = !showNotif">
+                                    @click.stop="openNotif()">
                                 <i class="bi bi-bell-fill"></i>
                                 <span v-if="unreadCount > 0"
                                       class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem">
@@ -114,30 +143,31 @@ const year = new Date().getFullYear();
                                     <p class="text-muted small mb-0 mt-2">Belum ada notifikasi</p>
                                 </div>
                                 <div v-for="n in notifications" :key="n.id" class="notif-item"
-                                     :class="{ 'notif-unread': (n.type==='claim' && !n.has_handover && n.status==='approved') || n.type==='comment' }">
+                                     :class="{ 'notif-unread': !n.read }">
                                     <div class="d-flex align-items-start gap-2">
                                         <i class="bi mt-1 flex-shrink-0"
                                            :class="{
-                                               'bi-check-circle-fill text-success': n.type==='claim' && n.status==='approved',
-                                               'bi-x-circle-fill text-danger':      n.type==='claim' && n.status==='rejected',
-                                               'bi-chat-left-text-fill text-primary': n.type==='comment'
+                                               'bi-check-circle-fill text-success': n.type==='claim_approved',
+                                               'bi-x-circle-fill text-danger':      n.type==='claim_rejected',
+                                               'bi-chat-left-text-fill text-primary': n.type==='comment',
+                                               'bi-hand-index-fill text-warning':  n.type==='claim_submitted'
                                            }"></i>
                                         <div class="flex-grow-1">
                                             <p class="mb-0 small fw-semibold">{{ n.message }}</p>
                                             <p class="mb-0 small text-muted">{{ n.item_name }}</p>
-                                            <p v-if="n.admin_note" class="mb-0 small fst-italic text-muted">"{{ n.admin_note }}"</p>
-                                            <p v-if="n.type==='claim' && n.status==='approved' && !n.has_handover"
-                                               class="mb-1 small text-warning fw-semibold">
-                                                <i class="bi bi-camera me-1"></i>Upload foto serah terima!
-                                            </p>
-                                            <Link :href="'/items/' + n.item_id"
-                                                  class="btn btn-outline-primary btn-sm py-0 px-2 mt-1"
-                                                  style="font-size:.72rem"
-                                                  @click="showNotif = false">
-                                                Lihat Barang
-                                            </Link>
+                                            <div class="d-flex gap-2 align-items-center mt-1">
+                                                <Link v-if="n.item_id" :href="'/items/' + n.item_id"
+                                                      class="btn btn-outline-primary btn-sm py-0 px-2"
+                                                      style="font-size:.72rem"
+                                                      @click="showNotif = false">
+                                                    Lihat Barang
+                                                </Link>
+                                            </div>
                                             <p class="mb-0 text-muted mt-1" style="font-size:.7rem">{{ formatNotifDate(n.created_at) }}</p>
                                         </div>
+                                        <!-- Tombol hapus notif -->
+                                        <button type="button" class="btn-close btn-sm flex-shrink-0" style="font-size:.6rem"
+                                                @click.stop="deleteNotif(n.id)" title="Hapus notifikasi"></button>
                                     </div>
                                 </div>
                             </div>

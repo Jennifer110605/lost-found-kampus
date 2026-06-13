@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\UserNotification;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,17 @@ class CommentController extends Controller
             'parent_id' => $parentId,
             'content' => $request->input('content'),
         ]);
+
+        // Notifikasi ke pemilik item (bukan diri sendiri, bukan reply)
+        if (!$parentId && $item->user_id !== Auth::id()) {
+            UserNotification::notify(
+                $item->user_id,
+                'comment',
+                Auth::user()->name . ' berkomentar di postinganmu',
+                $item->id,
+                $item->name
+            );
+        }
 
         return redirect()->route('items.show', $item)
             ->with('success', 'Komentar berhasil ditambahkan!');

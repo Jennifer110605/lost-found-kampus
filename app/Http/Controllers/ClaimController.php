@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ClaimRequest;
 use App\Models\Item;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 
 class ClaimController extends Controller
 {
-    /**
-     * Ajukan klaim kepemilikan / penemuan barang.
-     */
     public function store(Request $request, Item $item)
     {
         $request->validate([
@@ -44,13 +42,20 @@ class ClaimController extends Controller
             'proof_photo' => $proofUrl,
         ]);
 
+        // Notifikasi ke pemilik item
+        if ($item->user_id !== auth()->id()) {
+            UserNotification::notify(
+                $item->user_id,
+                'claim_submitted',
+                auth()->user()->name . ' mengajukan klaim pada barangmu',
+                $item->id,
+                $item->name
+            );
+        }
+
         return back()->with('success', 'Klaim berhasil diajukan. Tunggu verifikasi dari admin.');
     }
 
-    /**
-     * Upload foto serah terima dengan watermark timestamp.
-     * Foto diproses dengan GD (watermark), lalu diupload ke Cloudinary.
-     */
     public function uploadHandover(Request $request, ClaimRequest $claim)
     {
         $this->authorize('update', $claim);
@@ -66,11 +71,9 @@ class ClaimController extends Controller
         $file     = $request->file('handover_photo');
         $tempPath = sys_get_temp_dir() . '/handover_' . uniqid() . '.jpg';
 
-        // Tambahkan watermark, simpan ke temp file
         $watermarked = $this->addWatermark($file->getRealPath(), $tempPath, $claim);
         $uploadFrom  = $watermarked ? $tempPath : $file->getRealPath();
 
-        // Upload ke Cloudinary
         $result   = cloudinary()->upload($uploadFrom, ['folder' => 'lost-found/handover']);
         $photoUrl = $result->getSecurePath();
 
@@ -86,9 +89,6 @@ class ClaimController extends Controller
         return back()->with('success', 'Foto serah terima berhasil diupload. Proses selesai!');
     }
 
-    /**
-     * Tambahkan watermark timestamp ke foto (anti-foto palsu).
-     */
     private function addWatermark(string $sourcePath, string $destPath, ClaimRequest $claim): bool
     {
         if (!extension_loaded('gd')) return false;
@@ -108,7 +108,7 @@ class ClaimController extends Controller
 
         $timestamp = now()->format('d/m/Y H:i:s');
         $itemName  = $claim->item->name ?? 'Barang';
-        $lines     = [
+        $lines = [
             "SERAH TERIMA BARANG",
             "ID Klaim : #{$claim->id}",
             "Barang   : {$itemName}",

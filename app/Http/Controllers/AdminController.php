@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClaimRequest;
 use App\Models\Item;
+use App\Models\UserNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -97,6 +98,16 @@ class AdminController extends Controller
         $request->validate(['note' => 'nullable|string|max:500']);
         $claim->update(['status' => 'approved', 'admin_note' => $request->note]);
         $claim->item->update(['status' => 'resolved']);
+
+        // Notifikasi ke pelapor klaim
+        UserNotification::notify(
+            $claim->user_id,
+            'claim_approved',
+            'Klaim kamu untuk "' . ($claim->item->name ?? 'barang') . '" disetujui admin!',
+            $claim->item_id,
+            $claim->item->name ?? null
+        );
+
         return back()->with('success', "Klaim #{$claim->id} disetujui. Item ditandai selesai.");
     }
 
@@ -104,6 +115,15 @@ class AdminController extends Controller
     {
         $request->validate(['note' => 'required|string|max:500']);
         $claim->update(['status' => 'rejected', 'admin_note' => $request->note]);
+
+        UserNotification::notify(
+            $claim->user_id,
+            'claim_rejected',
+            'Klaim kamu untuk "' . ($claim->item->name ?? 'barang') . '" ditolak. Catatan: ' . $request->note,
+            $claim->item_id,
+            $claim->item->name ?? null
+        );
+
         return back()->with('success', "Klaim #{$claim->id} ditolak.");
     }
 }
