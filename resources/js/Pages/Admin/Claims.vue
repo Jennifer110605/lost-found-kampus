@@ -123,7 +123,7 @@ const statusClass = { pending: 'bg-warning text-dark', approved: 'bg-success', r
                                 <p class="small mb-0" style="white-space:pre-line;word-break:break-word">{{ claim.description }}</p>
                             </td>
                             <td>
-                                <a v-if="claim.proof_photo" :href="`/storage/${claim.proof_photo}`"
+                                <a v-if="claim.proof_photo" :href="claim.proof_photo && claim.proof_photo.startsWith('http') ? claim.proof_photo : '/storage/' + claim.proof_photo"
                                    target="_blank" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-image me-1"></i>Lihat
                                 </a>
@@ -137,7 +137,7 @@ const statusClass = { pending: 'bg-warning text-dark', approved: 'bg-success', r
                                     "{{ claim.admin_note }}"
                                 </div>
                                 <div v-if="claim.handover_photo" class="mt-1">
-                                    <a :href="`/storage/${claim.handover_photo}`" target="_blank"
+                                    <a :href="claim.handover_photo && claim.handover_photo.startsWith('http') ? claim.handover_photo : '/storage/' + claim.handover_photo" target="_blank"
                                        class="btn btn-xs btn-outline-success btn-sm" style="font-size:.72rem">
                                         <i class="bi bi-camera me-1"></i>Foto Serah Terima
                                     </a>

@@ -219,7 +219,7 @@ function deleteItem() {
                                 <div v-if="userClaim.status==='approved'" class="mt-3 border-top pt-3">
                                     <div v-if="userClaim.handover_photo">
                                         <p class="small fw-semibold mb-1"><i class="bi bi-check2-circle text-success me-1"></i>Dokumentasi serah terima sudah diupload.</p>
-                                        <a :href="'/storage/' + userClaim.handover_photo" target="_blank" class="btn btn-sm btn-outline-success">
+                                        <a :href="userClaim.handover_photo.startsWith('http') ? userClaim.handover_photo : '/storage/' + userClaim.handover_photo" target="_blank" class="btn btn-sm btn-outline-success">
                                             <i class="bi bi-image me-1"></i>Lihat Foto
                                         </a>
                                     </div>
