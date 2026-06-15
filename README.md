@@ -1,66 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Lost & Found Kampus — FATEK UNSRAT
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web untuk melaporkan dan mencari barang hilang maupun barang temuan di lingkungan Fakultas Teknik Universitas Sam Ratulangi (UNSRAT) Manado.
 
-## About Laravel
+🔗 **Live Demo:** [lost-found-kampus-production.up.railway.app](https://lost-found-kampus-production.up.railway.app)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Autentikasi** — Register, login (email/password), dan login via Google OAuth
+- **Lapor Barang** — Posting barang hilang atau ditemukan lengkap dengan foto, lokasi, dan tanggal
+- **Pencarian & Filter** — Cari berdasarkan nama barang, lokasi, tipe, dan status
+- **Komentar** — Diskusi pada setiap postingan, termasuk balasan (reply)
+- **Kontak via WhatsApp** — Tombol chat langsung ke pemilik barang dengan pesan template otomatis
+- **Sistem Klaim** — Ajukan klaim kepemilikan barang dengan deskripsi bukti dan foto pendukung
+- **Verifikasi Admin** — Admin meninjau dan menyetujui/menolak klaim yang masuk
+- **Dokumentasi Serah Terima** — Foto bukti serah terima otomatis diberi watermark timestamp dari server (anti-pemalsuan)
+- **Notifikasi Real-time** — Pemberitahuan untuk komentar baru dan status klaim (polling)
+- **Profil Wajib Lengkap** — User baru (termasuk dari Google login) wajib mengisi NIM dan nomor WhatsApp
+- **Admin Panel** — Dashboard statistik, kelola postingan, kelola user, dan kelola klaim
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech Stack
 
-## Learning Laravel
+| Layer | Teknologi |
+|---|---|
+| Backend | Laravel 10 (PHP) |
+| Frontend | Vue 3 + Inertia.js |
+| Build Tool | Vite |
+| Database | MySQL |
+| Styling | Bootstrap 5 + Custom CSS |
+| Storage Foto | Cloudinary |
+| Hosting | Railway |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Instalasi Lokal
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+# Clone repository
+git clone https://github.com/USERNAME/lost-found-kampus.git
+cd lost-found-kampus
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Install dependencies
+composer install
+npm install
 
-## Laravel Sponsors
+# Setup environment
+cp .env.example .env
+php artisan key:generate
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# Setup database
+php artisan migrate
 
-### Premium Partners
+# Jalankan storage symlink
+php artisan storage:link
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+# Jalankan development server (2 terminal)
+npm run dev
+php artisan serve
+```
 
-## Contributing
+Buka `http://127.0.0.1:8000` di browser.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Konfigurasi Tambahan
 
-## Code of Conduct
+Tambahkan ke `.env`:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+# Google OAuth (opsional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
 
-## Security Vulnerabilities
+# Cloudinary (untuk upload foto)
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Struktur Proyek
 
-## License
+```
+app/Http/Controllers/   → Logic aplikasi (Item, Claim, Admin, dll)
+app/Models/              → Model database (Item, User, ClaimRequest, dll)
+resources/js/Pages/      → Halaman Vue (Items, Auth, Admin, Profile)
+resources/js/Layouts/    → Layout utama (AppLayout, AdminLayout, AuthLayout)
+routes/web.php           → Definisi route aplikasi
+database/migrations/     → Struktur tabel database
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Tim Pengembang — Kelompok B1
+
+| Nama | NIM | Tugas |
+|---|---|---|
+| Jennifer Gloria Manoppo | 230211060081 | Frontend & Database |
+| Kezia Floresita Ngama | 230211060084 | Frontend |
+| Natanael Parulian Sitompul | 230211060087 | Backend |
+| Vancel Bernard Fredrik Rengkung | 230211060105 | Backend |
+
+---
+
+Dibuat untuk tugas mata kuliah Pengembangan Aplikasi Web Berbasis Framework — Teknik Informatika UNSRAT.
