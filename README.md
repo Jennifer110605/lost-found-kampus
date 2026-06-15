@@ -2,7 +2,21 @@
 
 Aplikasi web untuk melaporkan dan mencari barang hilang maupun barang temuan di lingkungan Fakultas Teknik Universitas Sam Ratulangi (UNSRAT) Manado.
 
-🔗 **Live Demo:** [lost-found-kampus-production.up.railway.app](https://lost-found-kampus-production.up.railway.app)
+Website: https://lost-found-kampus-production.up.railway.app
+ 
+=== AKUN ADMIN ===
+Email    : adminlostfound@gmail.com
+Password : qawsedrf
+ 
+Akses: Dashboard admin, kelola postingan, kelola user, kelola klaim
+URL Admin Panel: https://lost-found-kampus-production.up.railway.app/admin
+ 
+ 
+=== AKUN USER ===
+Email    : budisihombing026@gmail.com
+Password : plokijuh
+ 
+Akses: Lapor barang, klaim barang, komentar, edit profil
 
 ## Fitur Utama
 
